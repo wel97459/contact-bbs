@@ -201,7 +201,7 @@ def maybe_store_nodeinfo_in_db(packet: Dict[str, object]) -> None:
         role = packet["decoded"]["user"].get("role", "CLIENT")
         public_key = packet["decoded"]["user"].get("publicKey", "")
 
-        update_node_info_in_db(user_id, long_name, short_name, hw_model, is_licensed, role, public_key)
+        return update_node_info_in_db(user_id, long_name, short_name, hw_model, is_licensed, role, public_key)
 
     except sqlite3.Error as e:
         logging.error(f"SQLite error in maybe_store_nodeinfo_in_db: {e}")
@@ -222,7 +222,7 @@ def update_node_info_in_db(
     """Update or insert node information into the database, preserving unchanged fields."""
     try:
         ensure_node_table_exists()  # Ensure the table exists before any operation
-
+        exists = None  # Return a default value instead of None
         with sqlite3.connect(config.db_file_path) as db_connection:
             db_cursor = db_connection.cursor()
             table_name = f'"{interface_state.myNodeNum}_nodedb"'  # Quote in case of numeric names
@@ -235,7 +235,7 @@ def update_node_info_in_db(
             # Fetch existing values to preserve unchanged fields
             db_cursor.execute(f"SELECT * FROM {table_name} WHERE user_id = ?", (user_id,))
             existing_record = db_cursor.fetchone()
-
+            exists = bool(existing_record)
             if existing_record:
                 (
                     existing_long_name,
@@ -283,9 +283,11 @@ def update_node_info_in_db(
 
     except sqlite3.Error as e:
         logging.error(f"SQLite error in update_node_info_in_db: {e}")
+        exists = None  # Return a default value instead of None
     except Exception as e:
         logging.error(f"Unexpected error in update_node_info_in_db: {e}")
-
+        exists = None  # Return a default value instead of None
+    return exists
 
 def ensure_node_table_exists() -> None:
     """Ensure the node database table exists."""

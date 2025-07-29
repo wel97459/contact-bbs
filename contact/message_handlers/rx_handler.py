@@ -24,8 +24,8 @@ from contact.utilities.db_handler import (
 )
 import contact.ui.default_config as config
 
+from contact.message_handlers.tx_handler import send_message, send_traceroute
 from contact.utilities.singleton import ui_state, interface_state, app_state
-
 
 def play_sound():
     try:
@@ -88,6 +88,7 @@ def on_receive(packet: Dict[str, Any], interface: Any) -> None:
             if "decoded" not in packet:
                 return
 
+            logging.info(f"Processing packet: {packet}")
             # Assume any incoming packet could update the last seen time for a node
             changed = refresh_node_list()
             if changed:
@@ -95,7 +96,11 @@ def on_receive(packet: Dict[str, Any], interface: Any) -> None:
 
             if packet["decoded"]["portnum"] == "NODEINFO_APP":
                 if "user" in packet["decoded"] and "longName" in packet["decoded"]["user"]:
-                    maybe_store_nodeinfo_in_db(packet)
+                    exists = maybe_store_nodeinfo_in_db(packet)
+                    logging.info("Node exists: %s", exists)
+                    if "from" in packet and exists == False:
+                        send_message("Automated message: Check out https://nvme.sh and join our Discord or other social media.", destination=packet["from"])
+
 
             elif packet["decoded"]["portnum"] == "TEXT_MESSAGE_APP":
 
