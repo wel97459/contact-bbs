@@ -28,7 +28,7 @@ import ui.default_config as config
 
 from message_handlers.tx_handler import send_message, send_traceroute
 from utilities.singleton import ui_state, interface_state, app_state
-from bbs.bbs import on_receive_bbs
+from bbs.bbs import on_receive_bbs, bbs_send_message
 
 def play_sound():
     try:
@@ -101,9 +101,9 @@ def on_receive(packet: Dict[str, Any], interface: Any) -> None:
                 if "user" in packet["decoded"] and "longName" in packet["decoded"]["user"]:
                     exists = maybe_store_nodeinfo_in_db(packet)
                     logging.info("Node exists: %s", exists)
-                    if "from" in packet and exists == False:
+                    if "from" in packet and exists == False and config.automated_message != "":
                         select_node(packet["from"])
-                        send_message("Automated message: Check out https://nvme.sh and join our Discord or other social media.", destination=packet["from"])
+                        bbs_send_message(f"Automated message: {config.automated_message}", destination=packet["from"])
 
 
             elif packet["decoded"]["portnum"] == "TEXT_MESSAGE_APP":

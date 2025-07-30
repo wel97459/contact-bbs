@@ -118,5 +118,5 @@ def split_into_chunks(
 def get_functions(obj):
     return [item[0] for item in inspect.getmembers(obj) if inspect.isfunction(item[1])]
 
-def get_function(obj, function_name, context, packet):
-    return getattr(obj, function_name)(context, packet)
+def get_function(obj, function_name, context, choice, packet):
+    return getattr(obj, function_name)(context, choice, packet)

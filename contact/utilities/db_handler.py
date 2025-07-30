@@ -354,6 +354,31 @@ def get_name_from_database(user_id: int, type: str = "long") -> str:
         return "Unknown"
 
 
+def get_nodeid_from_database(short: str) -> str:
+    try:
+        with sqlite3.connect(config.db_file_path) as db_connection:
+            db_cursor = db_connection.cursor()
+
+            # Construct table name
+            table_name = f"{str(interface_state.myNodeNum)}_nodedb"
+            nodeinfo_table = f'"{table_name}"'  # Quote table name for safety
+
+            # Query the database
+            query = f"SELECT * FROM {nodeinfo_table} WHERE short_name = ?"
+
+            db_cursor.execute(query, (short,))
+            result = db_cursor.fetchall()
+
+            return result
+
+    except sqlite3.Error as e:
+        logging.error(f"SQLite error in get_name_from_database: {e}")
+        return "Unknown"
+
+    except Exception as e:
+        logging.error(f"Unexpected error in get_name_from_database: {e}")
+        return "Unknown"
+
 def is_chat_archived(user_id: int) -> int:
     try:
         with sqlite3.connect(config.db_file_path) as db_connection:
