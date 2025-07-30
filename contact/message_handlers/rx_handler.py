@@ -5,27 +5,30 @@ import shutil
 import subprocess
 from typing import Any, Dict
 
-from contact.utilities.utils import (
+from utilities.utils import (
     refresh_node_list,
     add_new_message,
 )
-from contact.ui.contact_ui import (
+from ui.contact_ui import (
     draw_packetlog_win,
     draw_node_list,
     draw_messages_window,
     draw_channel_list,
     add_notification,
+    select_node
 )
-from contact.utilities.db_handler import (
+from utilities.db_handler import (
     save_message_to_db,
     maybe_store_nodeinfo_in_db,
     get_name_from_database,
     update_node_info_in_db,
 )
-import contact.ui.default_config as config
 
-from contact.message_handlers.tx_handler import send_message, send_traceroute
-from contact.utilities.singleton import ui_state, interface_state, app_state
+import ui.default_config as config
+
+from message_handlers.tx_handler import send_message, send_traceroute
+from utilities.singleton import ui_state, interface_state, app_state
+from bbs.bbs import on_receive_bbs
 
 def play_sound():
     try:
@@ -87,8 +90,8 @@ def on_receive(packet: Dict[str, Any], interface: Any) -> None:
         try:
             if "decoded" not in packet:
                 return
-
-            logging.info(f"Processing packet: {packet}")
+            
+            # logging.info(f"Processing packet: {packet}")
             # Assume any incoming packet could update the last seen time for a node
             changed = refresh_node_list()
             if changed:
@@ -99,6 +102,7 @@ def on_receive(packet: Dict[str, Any], interface: Any) -> None:
                     exists = maybe_store_nodeinfo_in_db(packet)
                     logging.info("Node exists: %s", exists)
                     if "from" in packet and exists == False:
+                        select_node(packet["from"])
                         send_message("Automated message: Check out https://nvme.sh and join our Discord or other social media.", destination=packet["from"])
 
 
@@ -130,6 +134,7 @@ def on_receive(packet: Dict[str, Any], interface: Any) -> None:
 
                     channel_number = ui_state.channel_list.index(packet["from"])
 
+
                 channel_id = ui_state.channel_list[channel_number]
 
                 if channel_id != ui_state.channel_list[ui_state.selected_channel]:
@@ -150,6 +155,9 @@ def on_receive(packet: Dict[str, Any], interface: Any) -> None:
                     draw_messages_window(True)
 
                 save_message_to_db(channel_id, message_from_id, message_string)
+                
+                if packet["to"] == interface_state.myNodeNum:
+                    on_receive_bbs(packet)
 
         except KeyError as e:
             logging.error(f"Error processing packet: {e}")

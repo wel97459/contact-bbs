@@ -4,10 +4,10 @@ import curses
 import ipaddress
 from typing import Any, Optional, List
 
-from contact.ui.colors import get_color
-from contact.ui.nav_utils import move_highlight, draw_arrows, wrap_text
-from contact.ui.dialog import dialog
-from contact.utilities.validation_rules import get_validation_for
+from ui.colors import get_color
+from ui.nav_utils import move_highlight, draw_arrows, wrap_text
+from ui.dialog import dialog
+from utilities.validation_rules import get_validation_for
 
 
 def invalid_input(window: curses.window, message: str, redraw_func: Optional[callable] = None) -> None:

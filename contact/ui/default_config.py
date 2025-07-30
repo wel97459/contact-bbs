@@ -252,7 +252,7 @@ assign_config_variables(loaded_config)
 if __name__ == "__main__":
     logging.basicConfig(
         filename="default_config.log",
-        level=logging.INFO,  # DEBUG, INFO, WARNING, ERROR, CRITICAL)
+        level=logging.WARNING,  # DEBUG, INFO, WARNING, ERROR, CRITICAL)
         format="%(asctime)s - %(levelname)s - %(message)s",
     )
     print("\nLoaded Configuration:")

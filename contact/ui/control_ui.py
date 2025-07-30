@@ -5,22 +5,22 @@ import os
 import sys
 from typing import List
 
-from contact.utilities.save_to_radio import save_changes
-from contact.utilities.config_io import config_export, config_import
-from contact.utilities.control_utils import parse_ini_file, transform_menu_path
-from contact.utilities.input_handlers import (
+from utilities.save_to_radio import save_changes
+from utilities.config_io import config_export, config_import
+from utilities.control_utils import parse_ini_file, transform_menu_path
+from utilities.input_handlers import (
     get_repeated_input,
     get_text_input,
     get_fixed32_input,
     get_list_input,
     get_admin_key_input,
 )
-from contact.ui.colors import get_color
-from contact.ui.dialog import dialog
-from contact.ui.menus import generate_menu_from_protobuf
-from contact.ui.nav_utils import move_highlight, draw_arrows, update_help_window
-from contact.ui.user_config import json_editor
-from contact.ui.ui_state import MenuState
+from ui.colors import get_color
+from ui.dialog import dialog
+from ui.menus import generate_menu_from_protobuf
+from ui.nav_utils import move_highlight, draw_arrows, update_help_window
+from ui.user_config import json_editor
+from ui.ui_state import MenuState
 
 menu_state = MenuState()
 

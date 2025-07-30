@@ -4,11 +4,11 @@ import logging
 from datetime import datetime
 from typing import Optional, Union, Dict
 
-from contact.utilities.utils import decimal_to_hex
-import contact.ui.default_config as config
+from utilities.utils import decimal_to_hex
+import ui.default_config as config
 
 
-from contact.utilities.singleton import ui_state, interface_state
+from utilities.singleton import ui_state, interface_state
 
 
 def get_table_name(channel: str) -> str:

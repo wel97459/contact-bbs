@@ -2,10 +2,10 @@ import curses
 import re
 from unicodedata import east_asian_width
 
-from contact.ui.colors import get_color
-from contact.utilities.control_utils import transform_menu_path
+from ui.colors import get_color
+from utilities.control_utils import transform_menu_path
 from typing import Any, Optional, List, Dict
-from contact.utilities.singleton import interface_state, ui_state
+from utilities.singleton import interface_state, ui_state
 
 
 def get_node_color(node_index: int, reverse: bool = False):

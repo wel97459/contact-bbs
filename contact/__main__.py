@@ -24,18 +24,19 @@ import traceback
 from pubsub import pub
 
 # Local application
-import contact.ui.default_config as config
-from contact.message_handlers.rx_handler import on_receive
-from contact.settings import set_region
-from contact.ui.colors import setup_colors
-from contact.ui.contact_ui import main_ui
-from contact.ui.splash import draw_splash
-from contact.utilities.arg_parser import setup_parser
-from contact.utilities.db_handler import init_nodedb, load_messages_from_db
-from contact.utilities.input_handlers import get_list_input
-from contact.utilities.interfaces import initialize_interface
-from contact.utilities.utils import get_channels, get_nodeNum, get_node_list
-from contact.utilities.singleton import ui_state, interface_state, app_state
+import ui.default_config as config
+from message_handlers.rx_handler import on_receive
+from settings import set_region
+from ui.colors import setup_colors
+from ui.contact_ui import main_ui
+from ui.splash import draw_splash
+from utilities.arg_parser import setup_parser
+from utilities.db_handler import init_nodedb, load_messages_from_db
+from utilities.input_handlers import get_list_input
+from utilities.interfaces import initialize_interface
+from utilities.utils import get_channels, get_nodeNum, get_node_list
+from utilities.singleton import ui_state, interface_state, app_state
+from bbs.bbs import bbs_main
 
 # ------------------------------------------------------------------------------
 # Environment & Logging Setup
@@ -89,7 +90,7 @@ def main(stdscr: curses.window) -> None:
         args = setup_parser().parse_args()
 
         if getattr(args, "settings", False):
-            subprocess.run([sys.executable, "-m", "contact.settings"], check=True)
+            subprocess.run([sys.executable, "-m", "settings"], check=True)
             return
 
         logging.info("Initializing interface...")
@@ -100,6 +101,8 @@ def main(stdscr: curses.window) -> None:
                 prompt_region_if_unset(args)
 
             initialize_globals()
+
+            bbs_main()
             logging.info("Starting main UI")
 
         try:

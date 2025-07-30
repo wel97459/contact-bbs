@@ -1,5 +1,5 @@
 import curses
-from contact.ui.colors import get_color
+from ui.colors import get_color
 
 
 def dialog(title: str, message: str) -> None:

@@ -6,7 +6,7 @@
             "type": "debugpy",
             "request": "launch",
             "cwd": "${workspaceFolder}",
-            "module": "contact.__main__",
+            "module": "__main__",
             "args": []
         }
     ]

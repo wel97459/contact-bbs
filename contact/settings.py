@@ -5,13 +5,13 @@ import logging
 import sys
 import traceback
 
-import contact.ui.default_config as config
-from contact.utilities.input_handlers import get_list_input
-from contact.ui.colors import setup_colors
-from contact.ui.splash import draw_splash
-from contact.ui.control_ui import set_region, settings_menu
-from contact.utilities.arg_parser import setup_parser
-from contact.utilities.interfaces import initialize_interface
+import ui.default_config as config
+from utilities.input_handlers import get_list_input
+from ui.colors import setup_colors
+from ui.splash import draw_splash
+from ui.control_ui import set_region, settings_menu
+from utilities.arg_parser import setup_parser
+from utilities.interfaces import initialize_interface
 
 
 def main(stdscr: curses.window) -> None:
@@ -45,11 +45,11 @@ def main(stdscr: curses.window) -> None:
         raise
 
 
-logging.basicConfig(  # Run `tail -f client.log` in another terminal to view live
-    filename=config.log_file_path,
-    level=logging.WARNING,  # DEBUG, INFO, WARNING, ERROR, CRITICAL)
-    format="%(asctime)s - %(levelname)s - %(message)s",
-)
+# logging.basicConfig(  # Run `tail -f client.log` in another terminal to view live
+#     filename=config.log_file_path,
+#     level=logging.WARNING,  # DEBUG, INFO, WARNING, ERROR, CRITICAL)
+#     format="%(asctime)s - %(levelname)s - %(message)s",
+# )
 
 if __name__ == "__main__":
     log_file = config.log_file_path

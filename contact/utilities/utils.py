@@ -1,10 +1,9 @@
 import datetime
 import time
 from meshtastic.protobuf import config_pb2
-import contact.ui.default_config as config
+import ui.default_config as config
 
-from contact.utilities.singleton import ui_state, interface_state
-
+from utilities.singleton import ui_state, interface_state
 
 def get_channels():
     """Retrieve channels from the node and update ui_state.channel_list and ui_state.all_messages."""
@@ -81,6 +80,9 @@ def get_nodeNum():
     myNodeNum = myinfo["num"]
     return myNodeNum
 
+
+def get_node_channle(node_id):
+    return ui_state.channel_list.index(node_id)
 
 def decimal_to_hex(decimal_number):
     return f"!{decimal_number:08x}"
@@ -163,3 +165,4 @@ def add_new_message(channel_id, prefix, message):
 
     # Add the message
     ui_state.all_messages[channel_id].append((prefix,message))
+

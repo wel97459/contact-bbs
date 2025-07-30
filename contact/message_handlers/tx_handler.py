@@ -4,18 +4,19 @@ import google.protobuf.json_format
 from meshtastic import BROADCAST_NUM
 from meshtastic.protobuf import mesh_pb2, portnums_pb2
 
-from contact.utilities.db_handler import (
+from utilities.db_handler import (
     save_message_to_db,
     update_ack_nak,
     get_name_from_database,
     is_chat_archived,
     update_node_info_in_db,
 )
-import contact.ui.default_config as config
 
-from contact.utilities.singleton import ui_state, interface_state
+import ui.default_config as config
 
-from contact.utilities.utils import add_new_message
+from utilities.singleton import ui_state, interface_state
+
+from utilities.utils import add_new_message
 
 ack_naks: Dict[str, Dict[str, Any]] = {}  # requestId -> {channel, messageIndex, timestamp}
 
@@ -26,7 +27,7 @@ def onAckNak(packet: Dict[str, Any]) -> None:
     """
     Handles incoming ACK/NAK response packets.
     """
-    from contact.ui.contact_ui import draw_messages_window
+    from ui.contact_ui import draw_messages_window
 
     request = packet["decoded"]["requestId"]
     if request not in ack_naks:
@@ -64,7 +65,7 @@ def on_response_traceroute(packet: Dict[str, Any]) -> None:
     """
     Handle traceroute response packets and render the route visually in the UI.
     """
-    from contact.ui.contact_ui import draw_channel_list, draw_messages_window, add_notification
+    from ui.contact_ui import draw_channel_list, draw_messages_window, add_notification
 
     refresh_channels = False
     refresh_messages = False
@@ -197,6 +198,8 @@ def send_message(message: str, destination: int = BROADCAST_NUM, channel: int = 
         "messageIndex": len(ui_state.all_messages[channel_id]) - 1,
         "timestamp": timestamp,
     }
+
+    return sent_message_data
 
 
 def send_traceroute() -> None:

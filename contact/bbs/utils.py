@@ -1,62 +1,29 @@
 import logging
 import time
 
-user_states = {}
+from meshtastic import BROADCAST_NUM
+from message_handlers.tx_handler import send_message, send_traceroute
+
+from utilities.db_handler import get_name_from_database
+
+from ui.contact_ui import (
+    select_node_by_id,
+    check_channel_exsists
+)
+from utilities.utils import get_node_channle
 
 
-def update_user_state(user_id, state):
-    user_states[user_id] = state
-
-
-def get_user_state(user_id):
-    return user_states.get(user_id, None)
-
-
-def send_message(message, destination, interface):
-    time.sleep(8)
+def bbs_send_message(message: str, destination: int = BROADCAST_NUM) -> None:
+    ch = check_channel_exsists(destination)
     chunks = split_into_chunks(message)
     for i, chunk in enumerate(chunks):
         try:
-            d = interface.sendText(
-                text=chunk,
-                destinationId=destination,
-                wantAck=True,
-                wantResponse=True
-            )
-            destid = get_node_id_from_num(destination, interface)
+            d = send_message(chunk, channel = ch)
             chunk = chunk.replace('\n', '\\n')
-            logging.info(f"Sending message to user '{get_node_short_name(destid, interface)}' ({destid}) with sendID {d.id}: \"{chunk}\"")
+            logging.info(f"Sending message to user '{get_name_from_database(destination)}' ({destination}) with sendID {d.id}: \"{chunk}\"")
             time.sleep(5)
         except Exception as e:
             logging.info(f"REPLY SEND ERROR {e.message}")
-        time.sleep(2)
-
-
-def get_node_info(interface, short_name):
-    nodes = [{'num': node_id, 'shortName': node['user']['shortName'], 'longName': node['user']['longName']}
-             for node_id, node in interface.nodes.items()
-             if node['user']['shortName'].lower() == short_name]
-    return nodes
-
-
-def get_node_id_from_num(node_num, interface):
-    for node_id, node in interface.nodes.items():
-        if node['num'] == node_num:
-            return node_id
-    return None
-
-
-def get_node_short_name(node_id, interface):
-    node_info = interface.nodes.get(node_id)
-    if node_info:
-        return node_info['user']['shortName']
-    return None
-
-def get_node_long_name(node_id, interface):
-    node_info = interface.nodes.get(node_id)
-    if node_info:
-        return node_info['user']['longName']
-    return None
 
 
 def send_bulletin_to_bbs_nodes(board, sender_short_name, subject, content, unique_id, bbs_nodes, interface):
@@ -147,3 +114,9 @@ def split_into_chunks(
         start = actual_end
 
     return chunks
+
+def get_functions(obj):
+    return [item[0] for item in inspect.getmembers(obj) if inspect.isfunction(item[1])]
+
+def get_function(obj, function_name, context, packet):
+    return getattr(obj, function_name)(context, packet)

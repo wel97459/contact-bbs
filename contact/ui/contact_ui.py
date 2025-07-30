@@ -4,16 +4,16 @@ import time
 import traceback
 from typing import Union
 
-from contact.utilities.utils import get_channels, get_readable_duration, get_time_ago, refresh_node_list
-from contact.settings import settings_menu
-from contact.message_handlers.tx_handler import send_message, send_traceroute
-from contact.ui.colors import get_color
-from contact.utilities.db_handler import get_name_from_database, update_node_info_in_db, is_chat_archived
-from contact.utilities.input_handlers import get_list_input
-import contact.ui.default_config as config
-import contact.ui.dialog
-from contact.ui.nav_utils import move_main_highlight, draw_main_arrows, get_msg_window_lines, wrap_text
-from contact.utilities.singleton import ui_state, interface_state
+from utilities.utils import get_channels, get_readable_duration, get_time_ago, refresh_node_list
+from settings import settings_menu
+from message_handlers.tx_handler import send_message, send_traceroute
+from ui.colors import get_color
+from utilities.db_handler import get_name_from_database, update_node_info_in_db, is_chat_archived
+from utilities.input_handlers import get_list_input
+import ui.default_config as config
+import ui.dialog
+from ui.nav_utils import move_main_highlight, draw_main_arrows, get_msg_window_lines, wrap_text
+from utilities.singleton import ui_state, interface_state
 
 
 def handle_resize(stdscr: curses.window, firstrun: bool) -> None:
@@ -308,6 +308,7 @@ def handle_enter(input_text: str) -> str:
             ui_state.all_messages[node_list[ui_state.selected_node]] = []
 
         ui_state.selected_channel = ui_state.channel_list.index(node_list[ui_state.selected_node])
+        logging.info(f"ui_state.selected_channel: {ui_state.selected_channel} node_list[ui_state.selected_node]: {node_list[ui_state.selected_node]}");
 
         if is_chat_archived(ui_state.channel_list[ui_state.selected_channel]):
             update_node_info_in_db(ui_state.channel_list[ui_state.selected_channel], chat_archived=False)
@@ -324,7 +325,7 @@ def handle_enter(input_text: str) -> str:
         # TODO: This is a hack to prevent sending messages too quickly. Let's get errors from the node.
         now = time.monotonic()
         if now - ui_state.last_sent_time < 2.5:
-            contact.ui.dialog.dialog("Slow down", "Please wait 2 seconds between messages.")
+            ui.dialog.dialog("Slow down", "Please wait 2 seconds between messages.")
             return input_text
         # Enter key pressed, send user input as message
         send_message(input_text, channel=ui_state.selected_channel)
@@ -340,7 +341,7 @@ def handle_ctrl_t(stdscr: curses.window) -> None:
     """Handle Ctrl + T key events to send a traceroute."""
     send_traceroute()
     curses.curs_set(0)  # Hide cursor
-    contact.ui.dialog.dialog(
+    ui.dialog.dialog(
         stdscr,
         f"Traceroute Sent To: {get_name_from_database(ui_state.node_list[ui_state.selected_node])}",
         "Results will appear in messages window.\nNote: Traceroute is limited to once every 30 seconds.",
@@ -1006,3 +1007,46 @@ def draw_centered_text_field(win: curses.window, text: str, y_offset: int, color
 def draw_debug(value: Union[str, int]) -> None:
     function_win.addstr(1, 1, f"debug: {value}    ")
     function_win.refresh()
+
+
+def check_channel_exsists(node_id):
+        node_list = ui_state.node_list
+
+        if node_id not in ui_state.channel_list:
+            ui_state.channel_list.append(node_id)
+
+        if node_id not in ui_state.all_messages:
+            ui_state.all_messages[node_id] = []
+
+        channel = ui_state.channel_list.index(node_id)
+        
+        if is_chat_archived(ui_state.channel_list[channel]):
+            update_node_info_in_db(ui_state.channel_list[channel], chat_archived=False)
+
+        draw_node_list()
+        draw_channel_list()
+        draw_messages_window(True)
+        return channel
+
+def select_node_by_id(node_id):
+        logging.info(f"select_node - node_id: {node_id}")
+        node_list = ui_state.node_list
+
+        if node_id not in ui_state.channel_list:
+            ui_state.channel_list.append(node_id)
+
+        if node_id not in ui_state.all_messages:
+            ui_state.all_messages[node_id] = []
+
+        ui_state.selected_channel = ui_state.channel_list.index(node_id)
+        
+        if is_chat_archived(ui_state.channel_list[ui_state.selected_channel]):
+            update_node_info_in_db(ui_state.channel_list[ui_state.selected_channel], chat_archived=False)
+
+        ui_state.selected_node = 0
+        ui_state.current_window = 0
+
+        draw_node_list()
+        draw_channel_list()
+        draw_messages_window(True)
+        return ui_state.selected_channel

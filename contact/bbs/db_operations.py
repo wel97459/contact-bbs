@@ -6,11 +6,13 @@ from datetime import datetime
 
 from meshtastic import BROADCAST_NUM
 
-from utils import (
+from bbs.utils import (
     send_bulletin_to_bbs_nodes,
     send_delete_bulletin_to_bbs_nodes,
     send_delete_mail_to_bbs_nodes,
-    send_mail_to_bbs_nodes, send_message, send_channel_to_bbs_nodes
+    send_mail_to_bbs_nodes, 
+    send_channel_to_bbs_nodes,
+    bbs_send_message
 )
 
 
@@ -49,7 +51,7 @@ def initialize_database():
                     url TEXT NOT NULL
                 );''')
     conn.commit()
-    print("Database schema initialized.")
+    logging.info("Database schema initialized.")
 
 def add_channel(name, url, bbs_nodes=None, interface=None):
     conn = get_db_connection()

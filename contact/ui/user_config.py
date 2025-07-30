@@ -3,10 +3,10 @@ import json
 import curses
 from typing import Any, List, Dict
 
-from contact.ui.colors import get_color, setup_colors, COLOR_MAP
-from contact.ui.default_config import format_json_single_line_arrays, loaded_config
-from contact.ui.nav_utils import move_highlight, draw_arrows
-from contact.utilities.input_handlers import get_list_input
+from ui.colors import get_color, setup_colors, COLOR_MAP
+from ui.default_config import format_json_single_line_arrays, loaded_config
+from ui.nav_utils import move_highlight, draw_arrows
+from utilities.input_handlers import get_list_input
 
 
 width = 80
@@ -332,7 +332,7 @@ def save_json(file_path: str, data: Dict[str, Any]) -> None:
 
 
 def main(stdscr: curses.window) -> None:
-    from contact.ui.ui_state import MenuState
+    from ui.ui_state import MenuState
 
     menu_state = MenuState()
     if len(menu_state.menu_path) == 0:
