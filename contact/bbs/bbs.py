@@ -19,11 +19,12 @@ from bbs.utils import (
 
 user_states = {}
 
-class FindNode:
+class Mail:
     def __init__(self, short_name):
         self.user_id = None
         self.short_name = short_name
         self.long_name = None
+        self.message = ""
 
 class BSSContext:
     def __init__(self, currentClass, subFunction, user_id):
@@ -39,20 +40,26 @@ class MailMenu:
         pass
 
     def findNode(context, choice, packet):
-        context.message = "Enter short name of node:"
+        context.message = "Enter short name of node or E[X]it:"
+        if choice == "x":
+            user_state_popClass(context, packet)
+            return
+        
         msg = get_message(packet)
-        if len(msg) > 1 and context.tmp:
+        if msg.isdigit() and context.tmp:
             res = get_nodeid_from_database(context.tmp.short_name)
-            i = int(msg) -1
+            i = int(msg) - 1
             if i >=0 and i <= len(res):
-                ontext.tmp.user_id = res[i][0]
+                context.tmp.user_id = res[i][0]
                 context.tmp.long_name = res[i][1]
-                context.message = f"Selected node: {context.tmp.user_id}, {context.tmp.short_name}, {context.tmp.long_name}"
+                context.message = f"Selected node: {context.tmp.long_name}\n"
+                context.message += "Send you're message using multiple messages if it's too long for one.\nSend a message with the word END when done"
+                context.subFunction = "getMessage"
                 return
         elif len(msg) > 1:
-            res = get_nodeid_from_database(msg)
+            res = get_nodeid_from_database(msg.strip())
             logging.info(f"get_nodeid_from_database: {res}")
-            context.tmp = FindNode(msg)
+            context.tmp = Mail(msg.strip())
             if len(res) > 1:
                 context.message = "There are multiple nodes with that short name. Which one would you like to leave a message for?\n\n"
                 for i, node in enumerate(res):
@@ -61,7 +68,19 @@ class MailMenu:
             else:
                 context.tmp.user_id = res[0][0]
                 context.tmp.long_name = res[0][1]
-                context.message = f"Selected node: {context.tmp.user_id}, {context.tmp.short_name}, {context.tmp.long_name}"
+                context.message = f"Selected node: {context.tmp.long_name}\n"
+                context.message += "Send you're message using multiple messages if it's too long for one.\nSend a message with the word END when done"
+                context.subFunction = "getMessage"
+
+    def getMessage(context, choice, packet):
+        context.message = ":"
+        msg = get_message(packet)
+        if msg.lower().strip() == "end":
+            logging.info(f"message: {context.tmp.message}")
+            user_state_popClass(context, packet)
+        elif msg:
+            context.tmp.message += f"{msg}\n" 
+
 
     def main(context, choice, packet):
         match choice:
@@ -69,7 +88,7 @@ class MailMenu:
                 user_state_popClass(context, packet)
                 return
             case "s":
-                user_state_changeFunction(context, "findNode", packet)
+                user_state_pushFunction(context, "findNode", packet)
                 return
 
         context.message = "📪 Mail Menu\n\n"
@@ -100,15 +119,22 @@ class MainMenu:
 def user_state_popClass(state, packet):
     if state.classStack:
         state.message = ""
-        state.subFunction = "main"
-        state.currentClass = state.classStack.pop()
+        p = state.classStack.pop()
+        state.subFunction = p[1]
+        state.currentClass = p[0]
         get_function(state.currentClass, state.subFunction, state, "", packet)
 
 def user_state_pushClass(state, newClass, packet):
     state.message = ""
+    state.classStack.append([state.currentClass, state.subFunction])
     state.subFunction = "main"
-    state.classStack.append(state.currentClass)
     state.currentClass = newClass
+    get_function(state.currentClass, state.subFunction, state, "", packet)
+
+def user_state_pushFunction(state, newFunction, packet):
+    state.message = ""
+    state.classStack.append([state.currentClass, state.subFunction])
+    state.subFunction = newFunction
     get_function(state.currentClass, state.subFunction, state, "", packet)
 
 def user_state_changeFunction(state, newFunction, packet):
@@ -124,6 +150,7 @@ def get_user_state(user_id):
     state = user_states.get(user_id, None)
     if state == None:
         return update_user_state(user_id, BSSContext(MainMenu, "main", user_id))
+        #return update_user_state(user_id, BSSContext(MailMenu, "findNode", user_id))
     return state
 
 def get_message(packet):
@@ -147,5 +174,6 @@ def bbs_main():
 
 def on_receive_bbs(packet):
     context = call_user_state(packet["from"], packet)
-    bbs_send_message(context.message , packet["from"])
+    if context.message:
+        bbs_send_message(context.message, packet["from"])
     logging.info(f"Packet: {packet}")
